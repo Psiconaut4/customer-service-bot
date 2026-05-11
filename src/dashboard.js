@@ -1,10 +1,57 @@
+import "dotenv/config";
 import express from "express";
+import session from "express-session";
 import { sessionManager } from "./sessions.js";
 import { createServer } from "http";
 import qrcode from "qrcode";
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// ── SESSÃO ────────────────────────────────────────────────
+app.use(session({
+  secret: process.env.SESSION_SECRET || "segredo-padrao-troque",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    maxAge: 8 * 60 * 60 * 1000, // 8 horas
+  },
+}));
+
+// ── MIDDLEWARE DE AUTENTICAÇÃO ────────────────────────────
+function requireAuth(req, res, next) {
+  if (req.session?.logado) return next();
+  if (req.path.startsWith("/api")) return res.status(401).json({ erro: "Não autorizado" });
+  res.redirect("/login");
+}
+
+// ── ROTAS DE LOGIN ────────────────────────────────────────
+app.get("/login", (req, res) => {
+  if (req.session?.logado) return res.redirect("/");
+  const erro = req.query.erro ? "Usuário ou senha incorretos." : "";
+  res.send(getLoginHTML(erro));
+});
+
+app.post("/login", (req, res) => {
+  const { usuario, senha } = req.body;
+  if (
+    usuario === (process.env.DASH_USER || "admin") &&
+    senha === (process.env.DASH_PASS || "admin")
+  ) {
+    req.session.logado = true;
+    return res.redirect("/");
+  }
+  res.redirect("/login?erro=1");
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => res.redirect("/login"));
+});
+
+// Aplica autenticação em todas as rotas abaixo
+app.use(requireAuth);
 
 // Impede cache em todas as rotas /api (essencial na Hostinger)
 app.use("/api", (req, res, next) => {
@@ -509,6 +556,7 @@ function getDashboardHTML() {
   <div style="display:flex;align-items:center;gap:12px">
     <span id="numeroConectado" style="font-family:var(--mono);font-size:11px;color:var(--text-dim);display:none"></span>
     <button id="btnDesconectar" onclick="desconectar()" style="display:none" class="btn btn-red">⏏ Trocar número</button>
+    <button onclick="logout()" class="btn btn-outline" title="Sair">⎋ Sair</button>
     <div id="statusPill" class="status-pill offline">
       <div class="dot"></div>
       <span id="statusText">Desconectado</span>
@@ -828,10 +876,175 @@ function getDashboardHTML() {
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
   }
 
+  async function logout() {
+    await fetch('/logout', { method: 'POST' });
+    window.location.href = '/login';
+  }
+
+  // Redireciona para login se sessão expirar
+  async function pollComAuth() {
+    try {
+      await poll();
+    } catch (e) {
+      if (e?.status === 401) window.location.href = '/login';
+    }
+  }
+
   // Inicia polling
   poll();
   setInterval(poll, 2000);
 </script>
+</body>
+</html>`;
+}
+
+function getLoginHTML(erro = "") {
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Central de Atendimento</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0d0f0e;
+    --surface: #161918;
+    --surface2: #1e2220;
+    --border: #2a2f2c;
+    --green: #25d366;
+    --green-glow: rgba(37,211,102,0.12);
+    --red: #e05555;
+    --text: #e8ede9;
+    --text-dim: #7a8a7d;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+    margin-bottom: 32px;
+    letter-spacing: 0.05em;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--green);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 11px 14px;
+    outline: none;
+    margin-bottom: 16px;
+    transition: border-color 0.15s;
+  }
+
+  input:focus { border-color: var(--green); }
+
+  .btn-login {
+    width: 100%;
+    padding: 12px;
+    background: var(--green);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: background 0.15s;
+  }
+
+  .btn-login:hover { background: #1eb859; }
+
+  .erro {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--red);
+    color: var(--red);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">💬</div>
+    CENTRAL DE ATENDIMENTO
+  </div>
+  <h1>Entrar</h1>
+  <p class="sub">Acesso restrito a atendentes autorizados.</p>
+  ${erro ? `<div class="erro">⚠ ${erro}</div>` : ""}
+  <form method="POST" action="/login">
+    <label>Usuário</label>
+    <input type="text" name="usuario" autocomplete="username" autofocus required>
+    <label>Senha</label>
+    <input type="password" name="senha" autocomplete="current-password" required>
+    <button type="submit" class="btn-login">Entrar →</button>
+  </form>
+</div>
 </body>
 </html>`;
 }

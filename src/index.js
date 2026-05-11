@@ -10,6 +10,7 @@ import qrcode from "qrcode-terminal";
 import { startDashboard } from "./dashboard.js";
 import { sessionManager } from "./sessions.js";
 import { handleMessage } from "./handler.js";
+import { rm } from "fs/promises";
 
 const logger = pino({ level: "silent" });
 
@@ -33,7 +34,7 @@ async function connectToWhatsApp() {
   // Expõe o socket para o dashboard poder enviar mensagens
   sessionManager.setSocket(sock);
 
-  sock.ev.on("connection.update", (update) => {
+  sock.ev.on("connection.update", async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
@@ -61,8 +62,11 @@ async function connectToWhatsApp() {
         console.log("Reconectando em 3 segundos...");
         setTimeout(connectToWhatsApp, 3000);
       } else {
-        console.log("Sessão encerrada. Delete a pasta auth_info_baileys e reinicie.");
-        process.exit(1);
+        console.log("Sessão encerrada. Deletando sessão e aguardando novo QR...");
+        await rm("auth_info_baileys", { recursive: true, force: true });
+        sessionManager.setConnected(false);
+        sessionManager.setQR(null);
+        setTimeout(connectToWhatsApp, 3000);
       }
     }
 
@@ -85,7 +89,7 @@ async function connectToWhatsApp() {
     if (type !== "notify") return;
 
     for (const msg of messages) {
-      if (msg.key.fromMe) continue; // ignora mensagens enviadas pelo bot
+      // if (msg.key.fromMe) continue; // ignora mensagens enviadas pelo bot
       if (msg.key.remoteJid?.endsWith("@g.us")) continue; // ignora grupos
 
       await handleMessage(sock, msg);
