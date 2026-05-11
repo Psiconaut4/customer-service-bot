@@ -6,6 +6,14 @@ import qrcode from "qrcode";
 const app = express();
 app.use(express.json());
 
+// Impede cache em todas as rotas /api (essencial na Hostinger)
+app.use("/api", (req, res, next) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  next();
+});
+
 // ── API REST ──────────────────────────────────────────────
 
 // Status geral
