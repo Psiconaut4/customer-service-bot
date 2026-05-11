@@ -89,7 +89,7 @@ async function connectToWhatsApp() {
     if (type !== "notify") return;
 
     for (const msg of messages) {
-      // if (msg.key.fromMe) continue; // ignora mensagens enviadas pelo bot
+      if (msg.key.fromMe) continue; // ignora mensagens enviadas pelo bot
       if (msg.key.remoteJid?.endsWith("@g.us")) continue; // ignora grupos
 
       await handleMessage(sock, msg);
