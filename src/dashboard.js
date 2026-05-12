@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // ── SESSÃO ────────────────────────────────────────────────
 app.use(session({
-  secret: process.env.SESSION_SECRET || "segredo-padrao-troque",
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -53,7 +53,7 @@ app.post("/logout", (req, res) => {
 // Aplica autenticação em todas as rotas abaixo
 app.use(requireAuth);
 
-// Impede cache em todas as rotas /api (essencial na Hostinger)
+// Impede cache em todas as rotas /api (melhor desempenho em produção)
 app.use("/api", (req, res, next) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
