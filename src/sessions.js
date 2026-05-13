@@ -58,6 +58,7 @@ class SessionManager {
         ficha: {},              // dados coletados: tipo, dispositivo, marca, modelo, problema
         iniciadoEm: new Date().toISOString(),
         ultimaMensagem: new Date().toISOString(),
+        avisoEnviado: false,
       });
     }
     return this.conversas.get(jid);
