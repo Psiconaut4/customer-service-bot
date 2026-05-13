@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // ── SESSÃO ────────────────────────────────────────────────
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || "segredo-padrao-troque",
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -53,7 +53,7 @@ app.post("/logout", (req, res) => {
 // Aplica autenticação em todas as rotas abaixo
 app.use(requireAuth);
 
-// Impede cache em todas as rotas /api (melhor desempenho em produção)
+// Impede cache em todas as rotas /api (essencial na Hostinger)
 app.use("/api", (req, res, next) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
@@ -388,15 +388,43 @@ function getDashboardHTML() {
     padding: 12px 20px;
     border-bottom: 1px solid var(--border);
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 10px;
     flex-shrink: 0;
     background: var(--surface);
+  }
+
+  .chat-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .chat-info { display: flex; flex-direction: column; gap: 2px; }
   .chat-nome { font-size: 15px; font-weight: 600; }
   .chat-tel { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+
+  .ficha-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .ficha-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+
+  .ficha-pill b { color: var(--text-dim); font-weight: 400; margin-right: 2px; }
+  .ficha-pill span { color: var(--text); }
 
   .chat-actions { display: flex; gap: 8px; }
 
@@ -625,11 +653,14 @@ function getDashboardHTML() {
     </div>
     <div id="chatView" style="display:none; flex:1; flex-direction:column; overflow:hidden; display:none">
       <div class="chat-header">
-        <div class="chat-info">
-          <div class="chat-nome" id="chatNome">—</div>
-          <div class="chat-tel" id="chatTel">—</div>
+        <div class="chat-header-top">
+          <div class="chat-info">
+            <div class="chat-nome" id="chatNome">—</div>
+            <div class="chat-tel" id="chatTel">—</div>
+          </div>
+          <div class="chat-actions" id="chatActions"></div>
         </div>
-        <div class="chat-actions" id="chatActions"></div>
+        <div class="ficha-pills" id="fichaPills" style="display:none"></div>
       </div>
       <div class="messages" id="messages"></div>
       <div class="input-area">
@@ -756,13 +787,15 @@ function getDashboardHTML() {
     const hora = c.ultimaMensagem ? new Date(c.ultimaMensagem).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '';
     const ativo = conversaAtiva?.jid === c.jid ? 'active' : '';
     const badges = { bot: 'bot', aguardando: 'aguardando', humano: 'humano', encerrado: 'encerrado' };
+    const tipoLabel = { orcamento: '🔧', acompanhamento: '🔍', retirada: '📦', duvida: '💬' };
+    const tipoIcon = c.ficha?.tipo ? (tipoLabel[c.ficha.tipo] || '') : '';
     return \`<div class="conversa-item \${ativo}" onclick="abrirConversa('\${encodeURIComponent(c.jid)}')">
       <div class="conversa-top">
-        <span class="conversa-nome">\${c.nome}</span>
+        <span class="conversa-nome">\${tipoIcon} \${c.nome}</span>
         <span class="conversa-hora">\${hora}</span>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px">
-        <span class="conversa-preview">\${preview}</span>
+        <span class="conversa-preview">\${c.ficha?.dispositivo ? c.ficha.dispositivo + (c.ficha.marca ? ' · ' + c.ficha.marca : '') : preview}</span>
         <span class="badge \${badges[c.status] || 'bot'}">\${c.status}</span>
       </div>
     </div>\`;
@@ -810,6 +843,26 @@ function getDashboardHTML() {
       ? 'Digite uma mensagem...'
       : 'Assuma o atendimento para enviar mensagens';
     document.getElementById('sendBtn').disabled = !canType;
+
+    // Ficha técnica — pílulas no header
+    const fichaPills = document.getElementById('fichaPills');
+    const ficha = conversa.ficha || {};
+    const tipoLabel = { orcamento: '🔧 Orçamento', acompanhamento: '🔍 Acompanhamento', retirada: '📦 Retirada', duvida: '💬 Dúvida' };
+    const pills = [];
+    if (ficha.tipo)         pills.push(\`<div class="ficha-pill"><b>tipo</b><span>\${tipoLabel[ficha.tipo] || ficha.tipo}</span></div>\`);
+    if (ficha.dispositivo)  pills.push(\`<div class="ficha-pill"><b>dispositivo</b><span>\${ficha.dispositivo}</span></div>\`);
+    if (ficha.marca)        pills.push(\`<div class="ficha-pill"><b>marca</b><span>\${ficha.marca}</span></div>\`);
+    if (ficha.modelo)       pills.push(\`<div class="ficha-pill"><b>modelo</b><span>\${ficha.modelo}</span></div>\`);
+    if (ficha.problema)     pills.push(\`<div class="ficha-pill"><b>problema</b><span>\${ficha.problema}</span></div>\`);
+    if (ficha.protocolo)    pills.push(\`<div class="ficha-pill"><b>protocolo</b><span>\${ficha.protocolo}</span></div>\`);
+    if (ficha.nomeRetirada) pills.push(\`<div class="ficha-pill"><b>nome</b><span>\${ficha.nomeRetirada}</span></div>\`);
+    if (ficha.descricao)    pills.push(\`<div class="ficha-pill" title="\${ficha.descricao}"><b>descrição</b><span>\${ficha.descricao.slice(0,40)}\${ficha.descricao.length>40?'…':''}</span></div>\`);
+    if (pills.length) {
+      fichaPills.innerHTML = pills.join('');
+      fichaPills.style.display = 'flex';
+    } else {
+      fichaPills.style.display = 'none';
+    }
 
     // Mensagens
     const container = document.getElementById('messages');

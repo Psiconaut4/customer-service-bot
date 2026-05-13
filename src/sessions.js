@@ -53,7 +53,9 @@ class SessionManager {
         nome: nomeContato || telefone,
         telefone,
         mensagens: [],
-        status: "bot",       // 'bot' | 'aguardando' | 'humano'
+        status: "bot",
+        etapa: "inicio",        // controla em qual passo do fluxo o cliente está
+        ficha: {},              // dados coletados: tipo, dispositivo, marca, modelo, problema
         iniciadoEm: new Date().toISOString(),
         ultimaMensagem: new Date().toISOString(),
       });
@@ -71,6 +73,16 @@ class SessionManager {
   setStatus(jid, status) {
     const conversa = this.conversas.get(jid);
     if (conversa) conversa.status = status;
+  }
+
+  setEtapa(jid, etapa) {
+    const conversa = this.conversas.get(jid);
+    if (conversa) conversa.etapa = etapa;
+  }
+
+  updateFicha(jid, dados) {
+    const conversa = this.conversas.get(jid);
+    if (conversa) conversa.ficha = { ...conversa.ficha, ...dados };
   }
 
   getStatus(jid) {
