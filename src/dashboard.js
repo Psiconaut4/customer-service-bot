@@ -572,6 +572,170 @@ function getDashboardHTML() {
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+
+/* ───────────────── RESPONSIVIDADE ───────────────── */
+
+@media (max-width: 1100px) {
+  .sidebar {
+    width: 260px;
+  }
+
+  .msg {
+    max-width: 80%;
+  }
+}
+
+@media (max-width: 900px) {
+  body {
+    overflow: auto;
+    height: auto;
+  }
+
+  .main {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: 280px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chat-area {
+    min-height: 60vh;
+  }
+
+  .messages {
+    padding: 14px;
+  }
+
+  .msg {
+    max-width: 90%;
+  }
+
+  .stats {
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    min-width: 50%;
+  }
+}
+
+@media (max-width: 700px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  header > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat {
+    min-width: auto;
+  }
+
+  .chat-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .chat-actions {
+    width: 100%;
+  }
+
+  .chat-actions .btn {
+    flex: 1;
+  }
+
+  .input-area {
+    padding: 10px;
+  }
+
+  textarea {
+    font-size: 16px;
+  }
+
+  .send-btn {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 500px) {
+  .logo {
+    font-size: 11px;
+  }
+
+  .logo-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 13px;
+  }
+
+  .sidebar-header {
+    padding: 10px 12px;
+  }
+
+  .conversa-item {
+    padding: 10px 12px;
+  }
+
+  .conversa-preview {
+    max-width: 140px;
+  }
+
+  .chat-header {
+    padding: 12px;
+  }
+
+  .messages {
+    padding: 10px;
+  }
+
+  .msg {
+    font-size: 12px;
+    padding: 8px 11px;
+    max-width: 95%;
+  }
+
+  .ficha-pill {
+    font-size: 10px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stat {
+    padding: 12px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .filter-tab {
+    font-size: 9px;
+    padding: 10px 4px;
+  }
+}
+
+
 </style>
 </head>
 <body>
