@@ -88,7 +88,7 @@ app.post("/api/conversas/:jid/assumir", async (req, res) => {
     const texto = "👤 Um atendente está cuidando do seu atendimento agora.";
     await sessionManager.socket?.sendMessage(jid, { text: texto });
     sessionManager.addMensagem(jid, { de: "bot", texto, hora: new Date().toISOString() });
-  } catch {}
+  } catch { }
   res.json({ ok: true });
 });
 
@@ -110,7 +110,7 @@ app.post("/api/conversas/:jid/encerrar", async (req, res) => {
     try {
       await sessionManager.socket?.sendMessage(jid, { text: mensagemFinal });
       sessionManager.addMensagem(jid, { de: "atendente", texto: mensagemFinal, hora: new Date().toISOString() });
-    } catch {}
+    } catch { }
   }
   sessionManager.encerrarConversa(jid);
   res.json({ ok: true });
@@ -133,7 +133,7 @@ app.delete("/api/config", async (req, res) => {
 app.use(express.static(resolve(__dirname, "public")));
 app.get("/", (req, res) => { res.sendFile(resolve(__dirname, "public", "dashboard.html")); });
 
-export function startDashboard(port = 3000) {
+export function startDashboard(port = process.env.PORT || 3000) {
   const server = createServer(app);
-  server.listen(port, () => { console.log(`🌐 Dashboard iniciado em http://localhost:${port}`); });
+  server.listen(port, () => { console.log(`🌐 Dashboard iniciado na porta ${port}`); });
 }

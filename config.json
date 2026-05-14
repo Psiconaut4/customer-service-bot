@@ -1,0 +1,180 @@
+{
+  "empresa": "Assistência Técnica",
+  "numerosIgnorados": [
+    "5547996523892",
+    "5547999769485",
+    "5547997363466",
+    "5547992746062",
+    "5547920002910"
+  ],
+  "marcas": {
+    "celular": [
+      "Samsung",
+      "Apple (iPhone)",
+      "Motorola",
+      "Xiaomi",
+      "LG",
+      "Outro"
+    ],
+    "notebook": [
+      "Dell",
+      "Lenovo",
+      "HP",
+      "Asus",
+      "Acer",
+      "Apple (MacBook)",
+      "Outro"
+    ],
+    "tablet": [
+      "Samsung",
+      "Apple (iPad)",
+      "Lenovo",
+      "Outro"
+    ],
+    "outro": [
+      "Outro"
+    ]
+  },
+  "problemas": {
+    "celular": [
+      "Tela quebrada / manchada",
+      "Não liga / bateria fraca",
+      "Molhou / caiu na água",
+      "Botão / câmera / som",
+      "Lento / travando / software",
+      "Conector de carga",
+      "Outro problema"
+    ],
+    "notebook": [
+      "Não liga / sem imagem",
+      "Tela quebrada / manchada",
+      "Teclado / touchpad",
+      "Superaquecendo / lento",
+      "Conector de carga / bateria",
+      "Vírus / formatação / software",
+      "Outro problema"
+    ],
+    "tablet": [
+      "Tela quebrada / manchada",
+      "Não liga / bateria",
+      "Botão / câmera / som",
+      "Lento / travando / software",
+      "Outro problema"
+    ],
+    "outro": [
+      "Descreva o problema"
+    ]
+  },
+  "fluxo": [
+    {
+      "etapa": "menu_principal",
+      "mensagem": "Olá, {{nome}}! 👋 Bem-vindo(a) à *{{empresa}}*.\n\nComo posso te ajudar hoje?\n\n1️⃣ Orçamento / Reparo\n2️⃣ Acompanhar conserto em andamento\n3️⃣ Retirada de aparelho pronto\n4️⃣ Outras dúvidas\n\n_Digite o número da opção desejada._",
+      "tipo": "menu",
+      "opcoes": [
+        {
+          "texto": "Orçamento / Reparo",
+          "proximaEtapa": "menu_dispositivo"
+        },
+        {
+          "texto": "Acompanhar conserto em andamento",
+          "proximaEtapa": "acompanhamento"
+        },
+        {
+          "texto": "Retirada de aparelho pronto",
+          "proximaEtapa": "retirada"
+        },
+        {
+          "texto": "Outras dúvidas",
+          "proximaEtapa": "duvida_livre"
+        }
+      ]
+    },
+    {
+      "etapa": "menu_dispositivo",
+      "mensagem": "📱 Qual é o tipo do dispositivo?\n\n1️⃣ Celular / Smartphone\n2️⃣ Notebook / Computador\n3️⃣ Tablet / iPad\n4️⃣ Outro\n\n_Digite o número da opção._",
+      "tipo": "menu",
+      "campoFicha": "dispositivo",
+      "opcoes": [
+        {
+          "texto": "Celular / Smartphone",
+          "chave": "celular",
+          "proximaEtapa": "menu_marca"
+        },
+        {
+          "texto": "Notebook / Computador",
+          "chave": "notebook",
+          "proximaEtapa": "menu_marca"
+        },
+        {
+          "texto": "Tablet / iPad",
+          "chave": "tablet",
+          "proximaEtapa": "menu_marca"
+        },
+        {
+          "texto": "Outro",
+          "chave": "outro",
+          "proximaEtapa": "menu_marca"
+        }
+      ]
+    },
+    {
+      "etapa": "menu_marca",
+      "mensagem": "🏷 Qual a marca?\n\n{{opcoes}}\n\n_Digite o número da opção._",
+      "tipo": "menu_dinamico",
+      "fonte": "marcas",
+      "filtro": "_dispositivoKey",
+      "campoFicha": "marca",
+      "proximaEtapa": "pedir_modelo"
+    },
+    {
+      "etapa": "pedir_modelo",
+      "mensagem": "✏️ Qual o *modelo* do aparelho?\n\n_Ex: Galaxy S23, iPhone 14, Inspiron 15..._\n\nDigite o modelo:",
+      "tipo": "texto_livre",
+      "campoFicha": "modelo",
+      "proximaEtapa": "menu_problema"
+    },
+    {
+      "etapa": "menu_problema",
+      "mensagem": "🔧 Qual o problema?\n\n{{opcoes}}\n\n_Digite o número da opção._",
+      "tipo": "menu_dinamico",
+      "fonte": "problemas",
+      "filtro": "_dispositivoKey",
+      "campoFicha": "problema",
+      "proximaEtapa": "pedir_descricao"
+    },
+    {
+      "etapa": "pedir_descricao",
+      "mensagem": "📝 Descreva o problema com mais detalhes:\n\n_Ex: \"caiu no chão e a tela trincou, ainda liga mas não toca\"_",
+      "tipo": "texto_livre",
+      "campoFicha": "descricao",
+      "proximaEtapa": "fim"
+    },
+    {
+      "etapa": "acompanhamento",
+      "mensagem": "🔍 Informe seu *nome* ou *número de protocolo* para localizarmos seu aparelho:",
+      "tipo": "texto_livre",
+      "campoFicha": "protocolo",
+      "proximaEtapa": "fim"
+    },
+    {
+      "etapa": "retirada",
+      "mensagem": "📦 Informe seu *nome* para verificarmos se o aparelho está pronto para retirada:",
+      "tipo": "texto_livre",
+      "campoFicha": "nomeRetirada",
+      "proximaEtapa": "fim"
+    },
+    {
+      "etapa": "duvida_livre",
+      "mensagem": "💬 Descreva sua dúvida e um atendente responderá em breve:",
+      "tipo": "texto_livre",
+      "campoFicha": "duvida",
+      "proximaEtapa": "fim"
+    }
+  ],
+  "mensagensAvulsas": {
+    "fichaCompleta": "✅ Perfeito, *{{nome}}*! Recebemos suas informações:\n\n📱 *Dispositivo:* {{dispositivo}}\n🏷 *Marca:* {{marca}}\n📋 *Modelo:* {{modelo}}\n🔧 *Problema:* {{problema}}\n📝 *Descrição:* {{descricao}}\n\nUm de nossos técnicos analisará e entrará em contato em breve. ⏳",
+    "aguardandoAtendente": "✅ Informações registradas! Um atendente já foi notificado e responderá em breve. 🙏",
+    "aguardando": "⏳ Você já está em nossa fila! Um atendente responderá em breve.",
+    "opcaoInvalida": "❌ Opção inválida. Digite apenas o *número* da opção desejada."
+  }
+}
