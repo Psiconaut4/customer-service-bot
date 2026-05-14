@@ -4,6 +4,7 @@ import {
   getMsgAvulsa,
   getNumerosIgnorados,
   getOpcoesDinamicas,
+  getEmpresa,
   render,
 } from "./config.js";
 
@@ -85,18 +86,22 @@ async function processarMenu(sock, jid, texto, etapa, conversa, nomeContato) {
   const opcao = etapa.opcoes?.[op - 1];
 
   if (!opcao) {
-    const msgInvalida = getMsgAvulsa("opcaoInvalida");
-    await enviar(sock, jid, msgInvalida);
-    await enviarEtapa(sock, jid, etapa, conversa); // reenvia o menu
+    await enviar(sock, jid, getMsgAvulsa("opcaoInvalida"));
+    await enviarEtapa(sock, jid, etapa, conversa);
     return;
   }
 
-  // Salva no campo da ficha se definido
+  // Salva o texto da opção no campo da ficha
   if (etapa.campoFicha) {
     sessionManager.updateFicha(jid, { [etapa.campoFicha]: opcao.texto });
   }
 
-  // Avança para próxima etapa
+  // Se a opção tiver uma chave (ex: "celular"), salva como _dispositivoKey
+  // para que os menus dinâmicos de marca/problema saibam qual dicionário usar
+  if (opcao.chave) {
+    sessionManager.updateFicha(jid, { _dispositivoKey: opcao.chave });
+  }
+
   await avancar(sock, jid, opcao.proximaEtapa, conversa, nomeContato);
 }
 
@@ -202,6 +207,7 @@ async function enviarEtapa(sock, jid, etapa, conversa, nomeContato) {
 function buildVars(conversa, nomeContato) {
   return {
     nome: nomeContato || conversa?.nome || "",
+    empresa: getEmpresa(),
     ...conversa?.ficha,
   };
 }
@@ -214,13 +220,6 @@ function encerrarBot(jid, nomeContato) {
 
 async function enviar(sock, jid, texto) {
   if (!texto) return;
-  //delay artificial para evitar flood
-  const delay = Math.min(
-    800 + texto.length * 25,
-    3000
-  );
-
-  await new Promise((res) => setTimeout(res, delay));
   try {
     await sock.sendMessage(jid, { text: texto });
     sessionManager.addMensagem(jid, {

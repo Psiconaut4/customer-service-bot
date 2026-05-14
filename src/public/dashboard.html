@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central de Atendimento WhatsApp</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      --bg: #0d0f0e;
+      --surface: #161918;
+      --surface2: #1e2220;
+      --border: #2a2f2c;
+      --green: #25d366;
+      --green-dim: #1a9e4a;
+      --green-glow: rgba(37, 211, 102, 0.15);
+      --yellow: #f0c040;
+      --red: #e05555;
+      --blue: #5599ee;
+      --text: #e8ede9;
+      --text-dim: #7a8a7d;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+      --sidebar-w: 300px;
+      --header-h: 52px;
+      --stats-h: 56px;
+      --tabs-h: 44px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      color: var(--green);
+      white-space: nowrap;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--green);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .status-pill.online {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-glow);
+    }
+
+    .status-pill.offline {
+      border-color: var(--text-dim);
+      color: var(--text-dim);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    /* ── STATS ── */
+    .stats {
+      display: flex;
+      gap: 1px;
+      border-bottom: 1px solid var(--border);
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .stat {
+      flex: 1;
+      padding: 8px 16px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      font-family: var(--mono);
+    }
+
+    .stat-value.green {
+      color: var(--green);
+    }
+
+    .stat-value.yellow {
+      color: var(--yellow);
+    }
+
+    .stat-value.blue {
+      color: var(--blue);
+    }
+
+    /* ── ABAS PRINCIPAIS ── */
+    .main-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .main-tab {
+      padding: 10px 20px;
+      font-size: 12px;
+      font-family: var(--mono);
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      letter-spacing: 0.04em;
+    }
+
+    .main-tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+    }
+
+    .main-tab:hover {
+      color: var(--text);
+    }
+
+    /* ── LAYOUT MAIN ── */
+    .view {
+      flex: 1;
+      display: none;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    /* ── ATENDIMENTO ── */
+    #viewAtendimento {
+      flex-direction: row;
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filter-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .filter-tab {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 10px;
+      font-family: var(--mono);
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .filter-tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+    }
+
+    .filter-tab:hover {
+      color: var(--text);
+    }
+
+    .conversas-list {
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .conversa-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .conversa-item:hover {
+      background: var(--surface2);
+    }
+
+    .conversa-item.active {
+      background: var(--surface2);
+      border-left: 3px solid var(--green);
+    }
+
+    .conversa-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .conversa-nome {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .conversa-hora {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    .conversa-preview {
+      font-size: 11px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 9px;
+      font-family: var(--mono);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .badge.bot {
+      background: rgba(85, 153, 238, 0.2);
+      color: var(--blue);
+    }
+
+    .badge.aguardando {
+      background: rgba(240, 192, 64, 0.2);
+      color: var(--yellow);
+    }
+
+    .badge.humano {
+      background: rgba(37, 211, 102, 0.2);
+      color: var(--green);
+    }
+
+    .badge.encerrado {
+      background: rgba(122, 138, 125, 0.2);
+      color: var(--text-dim);
+    }
+
+    /* ── CHAT AREA ── */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .chat-header {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      background: var(--surface);
+    }
+
+    .chat-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .chat-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .chat-nome {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .chat-tel {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    .ficha-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .ficha-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-family: var(--mono);
+      white-space: nowrap;
+    }
+
+    .ficha-pill b {
+      color: var(--text-dim);
+      font-weight: 400;
+      margin-right: 2px;
+    }
+
+    .chat-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* BOTÕES */
+    .btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--mono);
+      cursor: pointer;
+      border: 1px solid;
+      transition: all 0.15s;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #000;
+      border-color: var(--green);
+    }
+
+    .btn-green:hover {
+      background: #1eb859;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+
+    .btn-outline:hover {
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+
+    .btn-red {
+      background: transparent;
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    .btn-red:hover {
+      background: rgba(224, 85, 85, 0.1);
+    }
+
+    .btn-yellow {
+      background: transparent;
+      color: var(--yellow);
+      border-color: var(--yellow);
+    }
+
+    .btn-yellow:hover {
+      background: rgba(240, 192, 64, 0.1);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* MENSAGENS */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .msg {
+      max-width: 65%;
+      padding: 9px 13px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .msg.cliente {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+      border-bottom-left-radius: 3px;
+    }
+
+    .msg.bot,
+    .msg.atendente {
+      background: var(--green-dim);
+      align-self: flex-end;
+      border-bottom-right-radius: 3px;
+    }
+
+    .msg.atendente {
+      background: #1a4a7a;
+    }
+
+    .msg-meta {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+
+    .msg-sender {
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 500;
+      margin-bottom: 3px;
+      opacity: 0.7;
+    }
+
+    .input-area {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-shrink: 0;
+      background: var(--surface);
+    }
+
+    textarea {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      padding: 10px 12px;
+      resize: none;
+      min-height: 44px;
+      max-height: 120px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus {
+      border-color: var(--green);
+    }
+
+    textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    textarea:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      background: var(--green);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      background: #1eb859;
+    }
+
+    .send-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* EMPTY / QR */
+    .empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      gap: 12px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      opacity: 0.3;
+    }
+
+    .empty-text {
+      font-size: 14px;
+    }
+
+    .qr-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .qr-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .qr-sub {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .qr-img {
+      border-radius: 12px;
+      border: 3px solid var(--green);
+    }
+
+    .qr-loading {
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    /* ── ABA CONFIGURAR ── */
+    #viewConfig {
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .config-wrap {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .config-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .config-section-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .config-section-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--green);
+    }
+
+    .config-section-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      border-color: var(--green);
+    }
+
+    .field textarea {
+      min-height: 80px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    /* tags de números ignorados */
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 44px;
+      align-items: center;
+    }
+
+    .tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(224, 85, 85, 0.12);
+      border: 1px solid rgba(224, 85, 85, 0.3);
+      color: var(--red);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    .tag-remove {
+      background: none;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .tag-remove:hover {
+      opacity: 1;
+    }
+
+    .tag-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .tag-input-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .tag-input-row input:focus {
+      border-color: var(--green);
+    }
+
+    /* listas de marcas/problemas */
+    .dict-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .dict-col-title {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dict-col-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dict-item-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dict-item-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+      min-width: 0;
+    }
+
+    .dict-item-row input:focus {
+      border-color: var(--green);
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--text-dim);
+      color: var(--text);
+    }
+
+    .icon-btn.red:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .icon-btn.green:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* fluxo — etapas */
+    .etapa-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .etapa-header {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .etapa-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--green);
+      flex: 1;
+    }
+
+    .etapa-tipo {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      padding: 2px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .etapa-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 13px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      transform: translateY(8px);
+      opacity: 0;
+      transition: all 0.2s;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.ok {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .toast.err {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    /* ── RESPONSIVO ── */
+    @media (max-width: 700px) {
+      .logo span {
+        display: none;
+      }
+
+      header {
+        padding: 0 12px;
+      }
+
+      .stats .stat {
+        padding: 6px 8px;
+      }
+
+      .stats .stat>span {
+        display: none;
+      }
+
+      .stat-value {
+        font-size: 16px;
+      }
+
+      .main-tab {
+        padding: 10px 12px;
+        font-size: 11px;
+      }
+
+      #viewAtendimento {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        max-height: 220px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .sidebar.hidden {
+        display: none;
+      }
+
+      .chat-area {
+        flex: 1;
+        min-height: 0;
+      }
+
+      .msg {
+        max-width: 85%;
+      }
+
+      .dict-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .config-wrap {
+        padding: 16px 12px 48px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .dict-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-right .btn {
+        display: none;
+      }
+
+      .header-right #btnDesconectar {
+        display: none !important;
+      }
+    }
+
+    .no-select {
+      user-select: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">💬</div>
+      <span>CENTRAL DE ATENDIMENTO</span>
+    </div>
+    <div class="header-right">
+      <span id="numeroConectado"
+        style="font-family:var(--mono);font-size:11px;color:var(--text-dim);display:none"></span>
+      <button id="btnDesconectar" onclick="desconectar()" style="display:none" class="btn btn-red">⏏ Trocar
+        número</button>
+      <button onclick="logout()" class="btn btn-outline">⎋ Sair</button>
+      <div id="statusPill" class="status-pill offline">
+        <div class="dot"></div>
+        <span id="statusText">Desconectado</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <div>
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <span style="font-size:18px">📊</span>
+    </div>
+    <div class="stat">
+      <div>
+        <div class="stat-label">Na Fila</div>
+        <div class="stat-value yellow" id="statFila">0</div>
+      </div>
+      <span style="font-size:18px">⏳</span>
+    </div>
+    <div class="stat">
+      <div>
+        <div class="stat-label">Em Atend.</div>
+        <div class="stat-value green" id="statHumano">0</div>
+      </div>
+      <span style="font-size:18px">👤</span>
+    </div>
+    <div class="stat">
+      <div>
+        <div class="stat-label">Encerrados</div>
+        <div class="stat-value" id="statEncerrado">0</div>
+      </div>
+      <span style="font-size:18px">✅</span>
+    </div>
+  </div>
+
+  <!-- ABAS PRINCIPAIS -->
+  <div class="main-tabs no-select">
+    <button class="main-tab active" onclick="setMainTab('atendimento')">💬 Atendimento</button>
+    <button class="main-tab" onclick="setMainTab('config')">⚙️ Configurar</button>
+  </div>
+
+  <!-- VIEW: ATENDIMENTO -->
+  <div class="view active" id="viewAtendimento">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span>Conversas</span>
+        <span id="sidebarCount" style="font-size:10px">0</span>
+      </div>
+      <div class="filter-tabs no-select">
+        <button class="filter-tab active" onclick="setFiltro('todos')">Todos</button>
+        <button class="filter-tab" onclick="setFiltro('aguardando')">Fila</button>
+        <button class="filter-tab" onclick="setFiltro('humano')">Ativos</button>
+        <button class="filter-tab" onclick="setFiltro('encerrado')">Enc.</button>
+      </div>
+      <div class="conversas-list" id="conversasList"></div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-area" id="chatArea">
+      <div class="empty" id="emptyState">
+        <div class="empty-icon">💬</div>
+        <div class="empty-text">Selecione uma conversa</div>
+      </div>
+      <div id="qrScreen" style="display:none" class="qr-screen">
+        <div class="qr-title">Conectar WhatsApp</div>
+        <div class="qr-sub">Escaneie o QR code com seu celular</div>
+        <img id="qrImg" class="qr-img" style="display:none" width="220" height="220">
+        <div class="qr-loading" id="qrLoading">Aguardando QR code...</div>
+      </div>
+      <div id="chatView" style="display:none; flex:1; flex-direction:column; overflow:hidden">
+        <div class="chat-header">
+          <div class="chat-header-top">
+            <div class="chat-info">
+              <div class="chat-nome" id="chatNome">—</div>
+              <div class="chat-tel" id="chatTel">—</div>
+            </div>
+            <div class="chat-actions" id="chatActions"></div>
+          </div>
+          <div class="ficha-pills" id="fichaPills" style="display:none"></div>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="input-area">
+          <textarea id="msgInput" placeholder="Assuma o atendimento para enviar mensagens" rows="1" disabled
+            onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="enviarMensagem()" disabled>➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: CONFIGURAR -->
+  <div class="view" id="viewConfig">
+    <div class="config-wrap">
+
+      <!-- Geral -->
+      <div class="config-section">
+        <div class="config-section-header">
+          <span class="config-section-title">🏢 Geral</span>
+        </div>
+        <div class="config-section-body">
+          <div class="field">
+            <label>Nome da empresa</label>
+            <input type="text" id="cfgEmpresa" placeholder="Ex: Assistência Técnica Silva">
+            <span class="field-hint">Usado em {{empresa}} nas mensagens do bot.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensagens avulsas -->
+      <div class="config-section">
+        <div class="config-section-header">
+          <span class="config-section-title">💬 Mensagens do Bot</span>
+        </div>
+        <div class="config-section-body" id="cfgMensagensAvulsas">
+          <!-- preenchido por JS -->
+        </div>
+      </div>
+
+      <!-- Fluxo de etapas -->
+      <div class="config-section">
+        <div class="config-section-header">
+          <span class="config-section-title">🔀 Fluxo de Atendimento</span>
+        </div>
+        <div class="config-section-body" id="cfgFluxo">
+          <!-- preenchido por JS -->
+        </div>
+      </div>
+
+      <!-- Marcas -->
+      <div class="config-section">
+        <div class="config-section-header">
+          <span class="config-section-title">🏷 Marcas por Dispositivo</span>
+        </div>
+        <div class="config-section-body">
+          <div class="dict-grid" id="cfgMarcas"></div>
+        </div>
+      </div>
+
+      <!-- Problemas -->
+      <div class="config-section">
+        <div class="config-section-header">
+          <span class="config-section-title">🔧 Problemas por Dispositivo</span>
+        </div>
+        <div class="config-section-body">
+          <div class="dict-grid" id="cfgProblemas"></div>
+        </div>
+      </div>
+
+      <!-- Números ignorados -->
+      <div class="config-section">
+        <div class="config-section-header">
+          <span class="config-section-title">🚫 Números Ignorados</span>
+        </div>
+        <div class="config-section-body">
+          <div>
+            <div class="tag-list" id="cfgNumerosTagList"></div>
+            <div class="tag-input-row">
+              <input type="text" id="cfgNovoNumero" placeholder="5547999990000" maxlength="20"
+                onkeydown="if(event.key==='Enter'){adicionarNumero();}">
+              <button class="btn btn-outline" onclick="adicionarNumero()">+ Adicionar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end">
+        <button class="btn btn-yellow" onclick="resetarConfig()">↺ Resetar para padrão</button>
+        <button class="btn btn-green" onclick="salvarConfig()">💾 Salvar configurações</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── ESTADO GLOBAL ────────────────────────────────────────────────────────────
+    let conversas = [];
+    let conversaAtiva = null;
+    let filtro = 'todos';
+    let connected = false;
+    let configAtual = {};
+
+    // ── ABAS PRINCIPAIS ──────────────────────────────────────────────────────────
+    function setMainTab(tab) {
+      document.querySelectorAll('.main-tab').forEach((el, i) => {
+        el.classList.toggle('active', ['atendimento', 'config'][i] === tab);
+      });
+      document.getElementById('viewAtendimento').classList.toggle('active', tab === 'atendimento');
+      document.getElementById('viewConfig').classList.toggle('active', tab === 'config');
+      if (tab === 'config') carregarConfig();
+    }
+
+    // ── POLLING ──────────────────────────────────────────────────────────────────
+    async function poll() {
+      try {
+        const [statusRes, conversasRes] = await Promise.all([
+          fetch('/api/status').then(r => r.json()),
+          fetch('/api/conversas').then(r => r.json())
+        ]);
+        connected = statusRes.connected;
+        conversas = conversasRes;
+        updateStatus(statusRes);
+        updateStats(statusRes.stats);
+        renderSidebar();
+        if (conversaAtiva) {
+          const atualizada = conversas.find(c => c.jid === conversaAtiva.jid);
+          if (atualizada) renderChat(atualizada);
+        }
+        if (!connected) showQR();
+      } catch { }
+    }
+
+    async function showQR() {
+      if (conversaAtiva) return;
+      const data = await fetch('/api/qr').then(r => r.json()).catch(() => null);
+      if (!data || data.connected) return;
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('qrScreen').style.display = 'flex';
+      document.getElementById('chatView').style.display = 'none';
+      if (data.qr) {
+        document.getElementById('qrImg').src = data.qr;
+        document.getElementById('qrImg').style.display = 'block';
+        document.getElementById('qrLoading').style.display = 'none';
+      } else {
+        document.getElementById('qrLoading').style.display = 'block';
+      }
+    }
+
+    // ── STATUS ───────────────────────────────────────────────────────────────────
+    function updateStatus({ connected: c, numero }) {
+      const pill = document.getElementById('statusPill');
+      const txt = document.getElementById('statusText');
+      const numEl = document.getElementById('numeroConectado');
+      const btnDesc = document.getElementById('btnDesconectar');
+      pill.className = 'status-pill ' + (c ? 'online' : 'offline');
+      txt.textContent = c ? 'Conectado' : 'Desconectado';
+      if (c && numero) {
+        numEl.textContent = '+' + numero;
+        numEl.style.display = 'block';
+        btnDesc.style.display = 'inline-flex';
+      } else {
+        numEl.style.display = 'none';
+        btnDesc.style.display = 'none';
+      }
+    }
+
+    async function desconectar() {
+      if (!confirm('Desconectar o número atual e exibir novo QR code?')) return;
+      document.getElementById('btnDesconectar').disabled = true;
+      await fetch('/api/desconectar', { method: 'POST' });
+      conversaAtiva = null;
+      document.getElementById('chatView').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('qrScreen').style.display = 'flex';
+      document.getElementById('qrImg').style.display = 'none';
+      document.getElementById('qrLoading').style.display = 'block';
+      document.getElementById('qrLoading').textContent = 'Desconectando... aguarde o QR code';
+      document.getElementById('btnDesconectar').disabled = false;
+    }
+
+    function updateStats(stats) {
+      if (!stats) return;
+      document.getElementById('statTotal').textContent = stats.total;
+      document.getElementById('statFila').textContent = stats.aguardando;
+      document.getElementById('statHumano').textContent = stats.humano;
+      document.getElementById('statEncerrado').textContent = stats.encerrado;
+    }
+
+    // ── SIDEBAR ──────────────────────────────────────────────────────────────────
+    function setFiltro(f) {
+      filtro = f;
+      document.querySelectorAll('.filter-tab').forEach((el, i) => {
+        el.classList.toggle('active', ['todos', 'aguardando', 'humano', 'encerrado'][i] === f);
+      });
+      renderSidebar();
+    }
+
+    function renderSidebar() {
+      const lista = filtro === 'todos' ? conversas : conversas.filter(c => c.status === filtro);
+      document.getElementById('sidebarCount').textContent = lista.length;
+      document.getElementById('conversasList').innerHTML = lista.map(c => {
+        const ultima = c.mensagens[c.mensagens.length - 1];
+        const preview = ultima ? ultima.texto.slice(0, 38) : 'Sem mensagens';
+        const hora = c.ultimaMensagem
+          ? new Date(c.ultimaMensagem).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const ativo = conversaAtiva?.jid === c.jid ? 'active' : '';
+        const tipoIcon = { orcamento: '🔧', acompanhamento: '🔍', retirada: '📦', duvida: '💬' }[c.ficha?.tipo] || '';
+        return `<div class="conversa-item ${ativo}" onclick="abrirConversa('${encodeURIComponent(c.jid)}')">
+      <div class="conversa-top">
+        <span class="conversa-nome">${tipoIcon} ${c.nome}</span>
+        <span class="conversa-hora">${hora}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px">
+        <span class="conversa-preview">${c.ficha?.dispositivo ? c.ficha.dispositivo + (c.ficha.marca ? ' · ' + c.ficha.marca : '') : preview}</span>
+        <span class="badge ${c.status || 'bot'}">${c.status}</span>
+      </div>
+    </div>`;
+      }).join('');
+    }
+
+    // ── CHAT ─────────────────────────────────────────────────────────────────────
+    async function abrirConversa(jidEncoded) {
+      const jid = decodeURIComponent(jidEncoded);
+      const conversa = conversas.find(c => c.jid === jid);
+      if (!conversa) return;
+      conversaAtiva = conversa;
+      renderSidebar();
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('qrScreen').style.display = 'none';
+      const cv = document.getElementById('chatView');
+      cv.style.display = 'flex';
+      cv.style.flexDirection = 'column';
+      cv.style.overflow = 'hidden';
+      cv.style.flex = '1';
+      renderChat(conversa);
+    }
+
+    function renderChat(conversa) {
+      conversaAtiva = conversa;
+
+      // Garante que o chatView está visível (pode ter sido ocultado pelo polling)
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('qrScreen').style.display = 'none';
+      const cv = document.getElementById('chatView');
+      cv.style.display = 'flex';
+      cv.style.flexDirection = 'column';
+      cv.style.overflow = 'hidden';
+      cv.style.flex = '1';
+
+      document.getElementById('chatNome').textContent = conversa.nome;
+      document.getElementById('chatTel').textContent = '+' + conversa.telefone;
+
+      const actions = document.getElementById('chatActions');
+      if (conversa.status === 'humano') {
+        actions.innerHTML = `<button class="btn btn-red" onclick="encerrarConversa()">✕ Encerrar</button>`;
+      } else if (conversa.status !== 'encerrado') {
+        actions.innerHTML = `<button class="btn btn-green" onclick="assumirConversa()">▶ Assumir</button>`;
+      } else {
+        actions.innerHTML = '';
+      }
+
+      const canType = conversa.status === 'humano';
+      const input = document.getElementById('msgInput');
+      input.disabled = !canType;
+      input.placeholder = canType ? 'Digite uma mensagem...' : 'Assuma o atendimento para enviar mensagens';
+      document.getElementById('sendBtn').disabled = !canType;
+
+      const fichaPills = document.getElementById('fichaPills');
+      const ficha = conversa.ficha || {};
+      const tipoLabel = { orcamento: '🔧 Orçamento', acompanhamento: '🔍 Acompanhamento', retirada: '📦 Retirada', duvida: '💬 Dúvida' };
+      const pills = [];
+      if (ficha.tipo) pills.push(`<div class="ficha-pill"><b>tipo</b><span>${tipoLabel[ficha.tipo] || ficha.tipo}</span></div>`);
+      if (ficha.dispositivo) pills.push(`<div class="ficha-pill"><b>dispositivo</b><span>${ficha.dispositivo}</span></div>`);
+      if (ficha.marca) pills.push(`<div class="ficha-pill"><b>marca</b><span>${ficha.marca}</span></div>`);
+      if (ficha.modelo) pills.push(`<div class="ficha-pill"><b>modelo</b><span>${ficha.modelo}</span></div>`);
+      if (ficha.problema) pills.push(`<div class="ficha-pill"><b>problema</b><span>${ficha.problema}</span></div>`);
+      if (ficha.protocolo) pills.push(`<div class="ficha-pill"><b>protocolo</b><span>${ficha.protocolo}</span></div>`);
+      if (ficha.nomeRetirada) pills.push(`<div class="ficha-pill"><b>nome</b><span>${ficha.nomeRetirada}</span></div>`);
+      if (ficha.descricao) pills.push(`<div class="ficha-pill" title="${ficha.descricao}"><b>desc</b><span>${ficha.descricao.slice(0, 36)}${ficha.descricao.length > 36 ? '…' : ''}</span></div>`);
+      fichaPills.innerHTML = pills.join('');
+      fichaPills.style.display = pills.length ? 'flex' : 'none';
+
+      const container = document.getElementById('messages');
+      container.innerHTML = conversa.mensagens.map(m => {
+        const hora = new Date(m.hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const sender = { cliente: conversa.nome, bot: 'Bot', atendente: 'Atendente' }[m.de];
+        return `<div class="msg ${m.de}">
+      <div class="msg-sender">${sender}</div>
+      ${m.texto}
+      <div class="msg-meta">${hora}</div>
+    </div>`;
+      }).join('');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function assumirConversa() {
+      if (!conversaAtiva) return;
+      await fetch(`/api/conversas/${encodeURIComponent(conversaAtiva.jid)}/assumir`, { method: 'POST' });
+      await poll();
+    }
+
+    async function encerrarConversa() {
+      if (!conversaAtiva) return;
+      const msg = prompt('Mensagem de encerramento (opcional):');
+      await fetch(`/api/conversas/${encodeURIComponent(conversaAtiva.jid)}/encerrar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensagemFinal: msg || '' })
+      });
+      conversaAtiva = null;
+      document.getElementById('chatView').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'flex';
+      await poll();
+    }
+
+    async function enviarMensagem() {
+      if (!conversaAtiva) return;
+      const input = document.getElementById('msgInput');
+      const texto = input.value.trim();
+      if (!texto) return;
+      input.value = '';
+      input.style.height = 'auto';
+      await fetch(`/api/conversas/${encodeURIComponent(conversaAtiva.jid)}/mensagem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto })
+      });
+      await poll();
+    }
+
+    function handleKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagem(); }
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    async function logout() {
+      if (confirm('Deseja desconectar o número do WhatsApp ao sair?')) {
+        await fetch('/api/desconectar', { method: 'POST' });
+      }
+      await fetch('/logout', { method: 'POST' });
+      window.location.href = '/login';
+    }
+
+    // ── CONFIG ───────────────────────────────────────────────────────────────────
+    async function carregarConfig() {
+      try {
+        configAtual = await fetch('/api/config').then(r => r.json());
+        renderConfig(configAtual);
+      } catch { toast('Erro ao carregar configurações', 'err'); }
+    }
+
+    function renderConfig(cfg) {
+      // Geral
+      document.getElementById('cfgEmpresa').value = cfg.empresa || '';
+
+      // Mensagens avulsas
+      const msgLabels = {
+        fichaCompleta: 'Ficha completa (resumo enviado ao cliente)',
+        aguardandoAtendente: 'Aguardando atendente (após fluxo concluído)',
+        aguardando: 'Aviso de fila (se cliente insistir)',
+        opcaoInvalida: 'Opção inválida',
+      };
+      const msgContainer = document.getElementById('cfgMensagensAvulsas');
+      msgContainer.innerHTML = Object.entries(msgLabels).map(([chave, label]) => `
+    <div class="field">
+      <label>${label}</label>
+      <textarea id="msg_${chave}" rows="3">${cfg.mensagensAvulsas?.[chave] || ''}</textarea>
+      <span class="field-hint">Variáveis disponíveis: {{nome}}, {{empresa}}, {{dispositivo}}, {{marca}}, {{modelo}}, {{problema}}, {{descricao}}</span>
+    </div>
+  `).join('');
+
+      // Fluxo — só texto das mensagens (modo simples)
+      const fluxoContainer = document.getElementById('cfgFluxo');
+      fluxoContainer.innerHTML = (cfg.fluxo || []).map((etapa, idx) => `
+    <div class="etapa-card">
+      <div class="etapa-header">
+        <span class="etapa-label">${etapa.etapa}</span>
+        <span class="etapa-tipo">${etapa.tipo}</span>
+      </div>
+      <div class="etapa-body">
+        <div class="field">
+          <label>Mensagem</label>
+          <textarea id="etapa_msg_${idx}" rows="4">${etapa.mensagem || ''}</textarea>
+          <span class="field-hint">{{opcoes}} é substituído pela lista numerada automaticamente.</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+      // Marcas
+      renderDictGrid('cfgMarcas', cfg.marcas || {});
+
+      // Problemas
+      renderDictGrid('cfgProblemas', cfg.problemas || {});
+
+      // Números ignorados
+      renderNumerosIgnorados(cfg.numerosIgnorados || []);
+    }
+
+    function renderDictGrid(containerId, dict) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = Object.entries(dict).map(([tipo, lista]) => `
+    <div>
+      <div class="dict-col-title">${tipo}</div>
+      <div class="dict-col-body" id="${containerId}_${tipo}">
+        ${lista.map((item, i) => dictItemRow(containerId, tipo, i, item)).join('')}
+      </div>
+      <button class="btn btn-outline" style="margin-top:8px;font-size:11px;padding:5px 10px"
+        onclick="addDictItem('${containerId}','${tipo}')">+ Adicionar</button>
+    </div>
+  `).join('');
+    }
+
+    function dictItemRow(containerId, tipo, idx, value) {
+      return `<div class="dict-item-row" id="${containerId}_${tipo}_row${idx}">
+    <input type="text" value="${escHtml(value)}" id="${containerId}_${tipo}_${idx}">
+    <button class="icon-btn red" onclick="removeDictItem('${containerId}','${tipo}',${idx})" title="Remover">✕</button>
+  </div>`;
+    }
+
+    function addDictItem(containerId, tipo) {
+      const colBody = document.getElementById(`${containerId}_${tipo}`);
+      const rows = colBody.querySelectorAll('.dict-item-row');
+      const idx = rows.length;
+      const div = document.createElement('div');
+      div.innerHTML = dictItemRow(containerId, tipo, idx, '');
+      colBody.appendChild(div.firstElementChild);
+      document.getElementById(`${containerId}_${tipo}_${idx}`)?.focus();
+    }
+
+    function removeDictItem(containerId, tipo, idx) {
+      const row = document.getElementById(`${containerId}_${tipo}_row${idx}`);
+      if (row) row.remove();
+      // renumera IDs
+      const colBody = document.getElementById(`${containerId}_${tipo}`);
+      colBody.querySelectorAll('.dict-item-row').forEach((row, i) => {
+        row.id = `${containerId}_${tipo}_row${i}`;
+        const input = row.querySelector('input');
+        if (input) input.id = `${containerId}_${tipo}_${i}`;
+        const btn = row.querySelector('button');
+        if (btn) btn.setAttribute('onclick', `removeDictItem('${containerId}','${tipo}',${i})`);
+      });
+    }
+
+    function getDictValues(containerId, tiposList) {
+      const result = {};
+      tiposList.forEach(tipo => {
+        const colBody = document.getElementById(`${containerId}_${tipo}`);
+        if (!colBody) return;
+        result[tipo] = Array.from(colBody.querySelectorAll('input'))
+          .map(i => i.value.trim())
+          .filter(Boolean);
+      });
+      return result;
+    }
+
+    // Números ignorados
+    function renderNumerosIgnorados(lista) {
+      const tagList = document.getElementById('cfgNumerosTagList');
+      tagList.innerHTML = lista.map((n, i) => `
+    <div class="tag" id="num_tag_${i}">
+      ${escHtml(n)}
+      <button class="tag-remove" onclick="removerNumero(${i})" title="Remover">✕</button>
+    </div>
+  `).join('');
+    }
+
+    function adicionarNumero() {
+      const input = document.getElementById('cfgNovoNumero');
+      const val = input.value.trim().replace(/\D/g, '');
+      if (!val) return;
+      if (!configAtual.numerosIgnorados) configAtual.numerosIgnorados = [];
+      configAtual.numerosIgnorados.push(val);
+      renderNumerosIgnorados(configAtual.numerosIgnorados);
+      input.value = '';
+    }
+
+    function removerNumero(idx) {
+      configAtual.numerosIgnorados.splice(idx, 1);
+      renderNumerosIgnorados(configAtual.numerosIgnorados);
+    }
+
+    // Coleta tudo do formulário e monta o objeto de config
+    function coletarConfig() {
+      const cfg = JSON.parse(JSON.stringify(configAtual)); // deep clone
+
+      cfg.empresa = document.getElementById('cfgEmpresa').value.trim();
+
+      // Mensagens avulsas
+      ['fichaCompleta', 'aguardandoAtendente', 'aguardando', 'opcaoInvalida'].forEach(chave => {
+        const el = document.getElementById(`msg_${chave}`);
+        if (el) cfg.mensagensAvulsas[chave] = el.value;
+      });
+
+      // Fluxo — só mensagens
+      (cfg.fluxo || []).forEach((etapa, idx) => {
+        const el = document.getElementById(`etapa_msg_${idx}`);
+        if (el) etapa.mensagem = el.value;
+      });
+
+      // Marcas
+      const tiposMarcas = Object.keys(cfg.marcas || {});
+      cfg.marcas = getDictValues('cfgMarcas', tiposMarcas);
+
+      // Problemas
+      const tiposProblemas = Object.keys(cfg.problemas || {});
+      cfg.problemas = getDictValues('cfgProblemas', tiposProblemas);
+
+      // Números ignorados — já estão em configAtual.numerosIgnorados
+      cfg.numerosIgnorados = configAtual.numerosIgnorados || [];
+
+      return cfg;
+    }
+
+    async function salvarConfig() {
+      const cfg = coletarConfig();
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cfg)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          configAtual = cfg;
+          toast('Configurações salvas!', 'ok');
+        } else {
+          toast('Erro: ' + (data.erro || 'desconhecido'), 'err');
+        }
+      } catch { toast('Erro ao salvar', 'err'); }
+    }
+
+    async function resetarConfig() {
+      if (!confirm('Resetar todas as configurações para o padrão? O arquivo config.json será apagado.')) return;
+      try {
+        const res = await fetch('/api/config', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          await carregarConfig();
+          toast('Configurações resetadas para o padrão.', 'ok');
+        } else {
+          toast('Erro: ' + (data.erro || 'desconhecido'), 'err');
+        }
+      } catch { toast('Erro ao resetar', 'err'); }
+    }
+
+    // ── HELPERS ──────────────────────────────────────────────────────────────────
+    function escHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    let toastTimer;
+    function toast(msg, tipo = '') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (tipo ? ' ' + tipo : '');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
+    }
+
+    // ── INIT ─────────────────────────────────────────────────────────────────────
+    poll();
+    setInterval(poll, 2000);
+  </script>
+</body>
+
+</html>
