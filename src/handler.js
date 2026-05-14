@@ -220,6 +220,14 @@ function encerrarBot(jid, nomeContato) {
 
 async function enviar(sock, jid, texto) {
   if (!texto) return;
+
+  //delay para evitar flood
+  const delay = Math.min(
+    800 + texto.length * 25,
+    3000
+  );
+  await new Promise((resolve) => setTimeout(resolve, delay));
+
   try {
     await sock.sendMessage(jid, { text: texto });
     sessionManager.addMensagem(jid, {

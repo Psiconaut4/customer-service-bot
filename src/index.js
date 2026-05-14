@@ -10,6 +10,7 @@ import qrcode from "qrcode-terminal";
 import { startDashboard } from "./dashboard.js";
 import { sessionManager } from "./sessions.js";
 import { handleMessage } from "./handler.js";
+import { loadConfig } from "./config.js";
 import { rm } from "fs/promises";
 
 const logger = pino({ level: "silent" });
@@ -103,6 +104,7 @@ async function connectToWhatsApp() {
 }
 
 // Inicia o dashboard web e depois conecta ao WhatsApp
+await loadConfig();
 startDashboard();
 sessionManager.setReconnectFn(connectToWhatsApp);
 connectToWhatsApp();
