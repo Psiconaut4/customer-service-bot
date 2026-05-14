@@ -104,7 +104,11 @@ async function connectToWhatsApp() {
 }
 
 // Inicia o dashboard web e depois conecta ao WhatsApp
-await loadConfig();
-startDashboard();
-sessionManager.setReconnectFn(connectToWhatsApp);
-connectToWhatsApp();
+async function main() {
+  await loadConfig();
+  startDashboard();
+  sessionManager.setReconnectFn(connectToWhatsApp);
+  connectToWhatsApp();
+}
+
+main();
