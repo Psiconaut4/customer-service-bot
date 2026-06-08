@@ -12,7 +12,13 @@ import {
 
 export async function handleMessage(sock, msg) {
   const jid = msg.key.remoteJid;
-  const telefone = jid.split("@")[0];
+
+  //usar senderPn para pegar número real, senão jid
+  const senderJid = msg.key.senderPn || jid;
+  const telefone = senderJid.split("@")[0];
+
+  if (jid.endsWith("@newsletter")) return;
+  if (jid === "status@broadcast") return;
 
   // Ignora números da lista de bloqueio (vem do config)
   if (getNumerosIgnorados().includes(telefone)) return;

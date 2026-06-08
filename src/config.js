@@ -11,11 +11,7 @@ const CONFIG_PATH = "config.json";
 export const DEFAULTS = {
   empresa: "Assistência Técnica",
   numerosIgnorados: [
-    "5547996523892",
-    "5547999769485",
-    "5547997363466",
-    "5547992746062",
-    "5547920002910",
+    "5547992746062"
   ],
   marcas: {
     celular:  ["Samsung", "Apple (iPhone)", "Motorola", "Xiaomi", "LG", "Outro"],
