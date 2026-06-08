@@ -34,7 +34,7 @@ class SessionManager {
   }
 
   async desconectar() {
-    try { await this.socket?.logout(); } catch {}
+    try { await this.socket?.logout(); } catch { }
     const { rm } = await import("fs/promises");
     await rm("auth_info_baileys", { recursive: true, force: true });
     this.connected = false;
@@ -45,13 +45,13 @@ class SessionManager {
   }
 
   // Cria ou retorna conversa existente
-  getOrCreateConversa(jid, nomeContato) {
+  getOrCreateConversa(jid, nomeContato, telefone) {
     if (!this.conversas.has(jid)) {
-      const telefone = jid.split("@")[0];
+      const telefoneFallback = telefone || jid.split("@")[0];  // fallback se não vier
       this.conversas.set(jid, {
         jid,
-        nome: nomeContato || telefone,
-        telefone,
+        nome: nomeContato || telefoneFallback,
+        telefone: telefoneFallback,  // ← usa o real
         mensagens: [],
         status: "bot",
         etapa: "inicio",        // controla em qual passo do fluxo o cliente está

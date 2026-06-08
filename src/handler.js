@@ -31,7 +31,7 @@ export async function handleMessage(sock, msg) {
   ).trim();
 
   const nomeContato = msg.pushName || telefone;
-  const conversa = sessionManager.getOrCreateConversa(jid, nomeContato);
+  const conversa = sessionManager.getOrCreateConversa(jid, nomeContato, telefone);
 
   sessionManager.addMensagem(jid, {
     de: "cliente",
