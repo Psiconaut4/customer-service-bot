@@ -45,9 +45,12 @@ app.post("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
 });
 
-app.use(express.static(resolve(__dirname, "public")));
+app.use('/assets', express.static(resolve(__dirname, 'public/assets')));
 
 app.use(requireAuth);
+
+app.use(express.static(resolve(__dirname, "public")));
+
 
 app.use("/api", (req, res, next) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
@@ -132,7 +135,7 @@ app.delete("/api/config", async (req, res) => {
 });
 
 
-app.get("/", (req, res) => { res.sendFile(resolve(__dirname, "public", "dashboard.html")); });
+app.get("/", (req, res) => { res.sendFile(resolve(__dirname, "public", "index.html")); });
 
 export function startDashboard(port = process.env.PORT || 3000) {
   const server = createServer(app);

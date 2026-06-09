@@ -1,0 +1,328 @@
+/* ── ABA CONFIGURAR ── */
+#viewConfig {
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.config-wrap {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.config-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.config-section-header {
+  cursor: pointer;
+  user-select: none;
+
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.config-section-header:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* seta indicadora */
+.config-section-header::after {
+  content: '›';
+  font-size: 18px;
+  color: var(--text-dim);
+  transition: transform 0.2s;
+  transform: rotate(90deg);
+}
+
+.config-section.collapsed .config-section-header::after {
+  transform: rotate(0deg);
+}
+
+/* gaveta */
+.config-section-body {
+  overflow: hidden;
+  /* valor alto o suficiente para qualquer conteúdo */
+  transition: max-height 0.2s ease, padding 0.2s;
+}
+
+.config-section.collapsed .config-section-body {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.config-section-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.config-section-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.field input,
+.field textarea,
+.field select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  resize: vertical;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: var(--green);
+}
+
+.field textarea {
+  min-height: 80px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+/* tags de números ignorados */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 44px;
+  align-items: center;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(224, 85, 85, 0.12);
+  border: 1px solid rgba(224, 85, 85, 0.3);
+  color: var(--red);
+  font-size: 12px;
+  font-family: var(--mono);
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.tag-remove:hover {
+  opacity: 1;
+}
+
+.tag-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tag-input-row input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.tag-input-row input:focus {
+  border-color: var(--green);
+}
+
+/* listas de marcas/problemas */
+.dict-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.dict-col-title {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dict-col-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dict-item-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dict-item-row input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 0;
+}
+
+.dict-item-row input:focus {
+  border-color: var(--green);
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.icon-btn:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+.icon-btn.red:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.icon-btn.green:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* fluxo — etapas */
+.etapa-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.etapa-header {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.etapa-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  flex: 1;
+}
+
+.etapa-tipo {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.etapa-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* responsivo config */
+@media (max-width: 700px) {
+  .dict-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .config-wrap {
+    padding: 16px 12px 48px;
+  }
+}
+
+@media (max-width: 420px) {
+  .dict-grid {
+    grid-template-columns: 1fr;
+  }
+}
