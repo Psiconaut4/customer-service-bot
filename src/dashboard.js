@@ -45,6 +45,8 @@ app.post("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/login"));
 });
 
+app.use(express.static(resolve(__dirname, "public")));
+
 app.use(requireAuth);
 
 app.use("/api", (req, res, next) => {
@@ -129,8 +131,7 @@ app.delete("/api/config", async (req, res) => {
   catch (err) { res.status(500).json({ erro: err.message }); }
 });
 
-// STATIC + FRONTEND
-app.use(express.static(resolve(__dirname, "public")));
+
 app.get("/", (req, res) => { res.sendFile(resolve(__dirname, "public", "dashboard.html")); });
 
 export function startDashboard(port = process.env.PORT || 3000) {
