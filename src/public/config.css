@@ -53,7 +53,6 @@
 /* gaveta */
 .config-section-body {
   overflow: hidden;
-  /* valor alto o suficiente para qualquer conteúdo */
   transition: max-height 0.2s ease, padding 0.2s;
 }
 

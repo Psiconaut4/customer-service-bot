@@ -50,6 +50,8 @@ export async function handleMessage(sock, msg) {
     }
     return;
   }
+  //conversa encerrada
+  if (conversa.status === "encerrado") return;
 
   // ── INÍCIO: envia a primeira etapa do fluxo ────────────────────────────────
   if (conversa.etapa === "inicio") {
