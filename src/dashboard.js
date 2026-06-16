@@ -8,12 +8,9 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import qrcode from "qrcode";
 import rateLimit from "express-rate-limit";
-import helmet from "helmet";
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -31,7 +28,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // HTTPS apenas em produção
+    // secure: process.env.NODE_ENV === "production", // HTTPS apenas em produção
     maxAge: 8 * 60 * 60 * 1000,
   },
 }));
