@@ -11,7 +11,7 @@ import {
 // ── HANDLER PRINCIPAL ────────────────────────────────────────────────────────
 
 export async function handleMessage(sock, msg) {
-  const jid = msg.key.remoteJid;
+  const jid = (msg.key.remoteJid || "").replace(/:\d+@/, "@");
 
   //usar senderPn para pegar número real, senão jid
   const senderJid = msg.key.senderPn || jid;
@@ -75,12 +75,15 @@ export async function handleMessage(sock, msg) {
   switch (etapaAtual.tipo) {
     case "menu":
       await processarMenu(sock, jid, texto, etapaAtual, conversa, nomeContato);
+      if (sessionManager.getStatus(jid) === "humano" || sessionManager.getStatus(jid) === "encerrado") return;
       break;
     case "menu_dinamico":
       await processarMenuDinamico(sock, jid, texto, etapaAtual, conversa, nomeContato);
+      if (sessionManager.getStatus(jid) === "humano" || sessionManager.getStatus(jid) === "encerrado") return;
       break;
     case "texto_livre":
       await processarTextoLivre(sock, jid, texto, etapaAtual, conversa, nomeContato);
+      if (sessionManager.getStatus(jid) === "humano" || sessionManager.getStatus(jid) === "encerrado") return;
       break;
     default:
       console.warn(`⚠️  Tipo de etapa desconhecido: ${etapaAtual.tipo}`);
@@ -152,6 +155,10 @@ async function processarTextoLivre(sock, jid, texto, etapa, conversa, nomeContat
 // ── AVANÇAR PARA PRÓXIMA ETAPA ────────────────────────────────────────────────
 
 async function avancar(sock, jid, proximaEtapa, conversa, nomeContato) {
+
+  const statusAtual = sessionManager.getStatus(jid);
+  if (statusAtual === "humano" || statusAtual === "encerrado") return;
+
   if (!proximaEtapa || proximaEtapa === "fim") {
     // Fluxo concluído: envia confirmação e encerra bot
     const ficha = sessionManager.getConversa(jid)?.ficha || {};
@@ -235,6 +242,9 @@ async function enviar(sock, jid, texto) {
     3000
   );
   await new Promise((resolve) => setTimeout(resolve, delay));
+
+  const conversa = sessionManager.getConversa(jid);
+  if (conversa?.status === "encerrado" || conversa?.status === "humano") return;
 
   try {
     await sock.sendMessage(jid, { text: texto });

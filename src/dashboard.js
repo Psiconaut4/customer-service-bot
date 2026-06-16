@@ -87,7 +87,7 @@ app.get("/api/conversas/:jid", (req, res) => {
 });
 
 app.post("/api/conversas/:jid/assumir", async (req, res) => {
-  const jid = decodeURIComponent(req.params.jid);
+  const jid = decodeURIComponent(req.params.jid).replace(/:\d+@/, "@");
   sessionManager.assumirConversa(jid);
   try {
     const texto = "👤 Um atendente está cuidando do seu atendimento agora.";
@@ -98,7 +98,7 @@ app.post("/api/conversas/:jid/assumir", async (req, res) => {
 });
 
 app.post("/api/conversas/:jid/mensagem", async (req, res) => {
-  const jid = decodeURIComponent(req.params.jid);
+  const jid = decodeURIComponent(req.params.jid).replace(/:\d+@/, "@");
   const { texto } = req.body;
   if (!texto) return res.status(400).json({ erro: "texto é obrigatório" });
   try {
@@ -109,7 +109,7 @@ app.post("/api/conversas/:jid/mensagem", async (req, res) => {
 });
 
 app.post("/api/conversas/:jid/encerrar", async (req, res) => {
-  const jid = decodeURIComponent(req.params.jid);
+  const jid = decodeURIComponent(req.params.jid).replace(/:\d+@/, "@");
   const { mensagemFinal } = req.body;
   if (mensagemFinal) {
     try {

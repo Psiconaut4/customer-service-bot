@@ -114,6 +114,7 @@ class SessionManager {
 
   // Fecha a conversa
   encerrarConversa(jid) {
+    console.log("🔴 Encerrando:", jid, "— existe no map:", this.conversas.has(jid));
     this.setStatus(jid, "encerrado");
   }
 
