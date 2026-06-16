@@ -7,12 +7,21 @@ import { createServer } from "http";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import qrcode from "qrcode";
+import rateLimit from "express-rate-limit";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // janela de 15 minutos
+  max: 7,                   // máximo 7 tentativas por IP
+  message: { erro: "Muitas tentativas. Tente novamente em 15 minutos." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.use(session({
   secret: process.env.SESSION_SECRET || "segredo-padrao-troque",
@@ -32,9 +41,9 @@ app.get("/login", (req, res) => {
   res.sendFile(resolve(__dirname, "public", "login.html"));
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", loginLimiter, (req, res) => {
   const { usuario, senha } = req.body;
-  if (usuario === (process.env.DASH_USER || "admin") && senha === (process.env.DASH_PASS || "admin")) {
+  if (usuario === (process.env.DASH_USER) && senha === (process.env.DASH_PASS)) {
     req.session.logado = true;
     return res.redirect("/");
   }
