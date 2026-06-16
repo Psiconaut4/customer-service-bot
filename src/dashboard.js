@@ -24,10 +24,14 @@ const loginLimiter = rateLimit({
 });
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || "segredo-padrao-troque",
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, maxAge: 8 * 60 * 60 * 1000 },
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // HTTPS apenas em produção
+    maxAge: 8 * 60 * 60 * 1000,
+  },
 }));
 
 function requireAuth(req, res, next) {
