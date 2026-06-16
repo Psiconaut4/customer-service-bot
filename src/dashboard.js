@@ -8,10 +8,12 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import qrcode from "qrcode";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
